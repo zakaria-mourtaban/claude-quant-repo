@@ -1,0 +1,66 @@
+# Crypto Trading Bot - Python Dependencies
+# Python 3.11+ required
+
+# Core Trading Framework
+freqtrade>=2024.1
+ccxt>=4.0.0
+
+# Data Analysis & Backtesting
+pandas>=2.0.0
+numpy>=1.24.0
+scipy>=1.11.0
+
+# Technical Analysis
+ta-lib>=0.4.28
+pandas-ta>=0.3.14b
+
+# Backtesting (Optional - for advanced optimization)
+vectorbt>=0.25.0
+
+# Machine Learning (FreqAI support)
+scikit-learn>=1.3.0
+tensorflow>=2.13.0  # Optional - for deep learning strategies
+lightgbm>=4.0.0     # Optional - for gradient boosting models
+
+# Visualization
+plotly>=5.14.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Monitoring & Dashboard
+streamlit>=1.25.0
+dash>=2.11.0        # Alternative to Streamlit
+
+# Notifications
+python-telegram-bot>=20.0
+
+# Database
+sqlalchemy>=2.0.0
+
+# API & Web
+requests>=2.31.0
+aiohttp>=3.8.0
+
+# Configuration
+python-dotenv>=1.0.0
+pyyaml>=6.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+
+# Utilities
+python-dateutil>=2.8.0
+pytz>=2023.3
+tabulate>=0.9.0
+
+# Development Tools
+jupyter>=1.0.0
+ipython>=8.14.0
+black>=23.7.0       # Code formatter
+flake8>=6.0.0       # Linting
+mypy>=1.4.0         # Type checking
+
+# Performance
+numba>=0.57.0       # JIT compilation for speed
