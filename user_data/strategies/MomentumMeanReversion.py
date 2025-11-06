@@ -11,8 +11,21 @@ Research Backing:
 - Excels across different market regimes
 - Based on 2025 quantitative crypto trading research
 
+SHARIA COMPLIANCE:
+✅ SPOT TRADING ONLY - No margin, no leverage, no futures
+✅ LONG POSITIONS ONLY - No short selling (only buy and sell)
+✅ OWN CAPITAL ONLY - Trades only with your own funds (1x leverage)
+✅ HALAL - Compliant with Islamic finance principles
+
+This strategy:
+- Buys cryptocurrency with your own money (spot market)
+- Holds real assets in your wallet
+- Sells when conditions are favorable
+- Never borrows money or uses leverage
+- Never short sells (betting on price decline)
+
 Author: Claude Code
-Version: 1.0.0
+Version: 1.0.1
 """
 
 from freqtrade.strategy import IStrategy, IntParameter, DecimalParameter
@@ -25,23 +38,31 @@ class MomentumMeanReversion(IStrategy):
     """
     Momentum + Mean Reversion Hybrid Strategy
 
-    Entry Logic:
+    ✅ SHARIA COMPLIANT: Spot trading only, long positions only, no leverage
+
+    Entry Logic (LONG POSITIONS ONLY):
     - MOMENTUM MODE (ADX > 25):
       - LONG: Price > EMA50, RSI crosses above 50
-      - SHORT: Price < EMA50, RSI crosses below 50 (if shorting enabled)
+      - Volume confirmation
 
     - MEAN REVERSION MODE (ADX < 20):
       - LONG: RSI < 30 (oversold) AND price touches lower Bollinger Band
-      - SHORT: RSI > 70 (overbought) AND price touches upper Bollinger Band
+      - Volume confirmation
 
     Exit Logic:
     - MOMENTUM: Trailing stop (ATR-based) or RSI reversal
     - MEAN REVERSION: Target mean (middle Bollinger Band) or RSI reversal
 
     Risk Management:
-    - Stop loss: 2x ATR from entry
-    - Position size: 2% risk per trade (configured in config.json)
+    - Stop loss: 2x ATR from entry (maximum 5% hard stop)
+    - Position size: 33% of balance per trade
     - Maximum 3 concurrent positions
+    - Leverage: 1x (spot trading, no margin)
+
+    IMPORTANT: This strategy NEVER:
+    - Uses margin or leverage (always 1x)
+    - Opens short positions (only buys and sells)
+    - Borrows funds or uses futures contracts
     """
 
     # Strategy metadata
@@ -376,6 +397,13 @@ class MomentumMeanReversion(IStrategy):
         """
         Customize leverage for each new trade.
 
-        For this strategy, we use NO LEVERAGE (1x) for safety.
+        ✅ SHARIA COMPLIANT: Always returns 1.0 (no leverage/margin)
+
+        This strategy uses SPOT TRADING ONLY:
+        - 1x leverage = buying actual cryptocurrency with your own money
+        - No margin = no borrowing funds
+        - No futures = immediate settlement
+
+        This ensures the strategy is Halal (permissible) under Islamic finance.
         """
         return 1.0

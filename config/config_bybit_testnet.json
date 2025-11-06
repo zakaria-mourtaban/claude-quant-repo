@@ -1,4 +1,10 @@
 {
+  "_comment": "✅ SHARIA COMPLIANT CONFIG - Spot trading only, no leverage, long positions only",
+  "_comment2": "Bybit Testnet: Uses virtual funds ($50,000 USDT) for demo trading",
+
+  "trading_mode": "spot",
+  "margin_mode": "",
+
   "max_open_trades": 3,
   "stake_currency": "USDT",
   "stake_amount": "unlimited",
@@ -113,7 +119,7 @@
     "password": "${API_PASSWORD}"
   },
 
-  "bot_name": "crypto-trading-bot-testnet",
+  "bot_name": "crypto-trading-bot-halal-testnet",
   "initial_state": "running",
   "force_entry_enable": false,
   "internals": {

@@ -1,4 +1,9 @@
 {
+  "_comment": "✅ SHARIA COMPLIANT CONFIG - Spot trading only, no leverage, long positions only",
+
+  "trading_mode": "spot",
+  "margin_mode": "",
+
   "max_open_trades": 3,
   "stake_currency": "USDT",
   "stake_amount": "unlimited",
@@ -97,7 +102,7 @@
     "password": "changeme_please"
   },
 
-  "bot_name": "crypto-trading-bot-dryrun",
+  "bot_name": "crypto-trading-bot-halal-dryrun",
   "initial_state": "running",
   "force_entry_enable": false,
   "internals": {
