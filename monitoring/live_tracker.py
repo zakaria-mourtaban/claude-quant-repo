@@ -11,6 +11,8 @@ import os
 from datetime import datetime, timedelta
 from pathlib import Path
 import time
+import statistics
+from stage_manager import StageManager
 
 
 class LivePerformanceTracker:
@@ -27,6 +29,9 @@ class LivePerformanceTracker:
 
         self.start_time = datetime.now()
         self.session_data = self._load_or_create_session()
+
+        # Initialize stage manager
+        self.stage_manager = StageManager()
 
     def _load_or_create_session(self):
         """Load existing session or create new one"""
@@ -215,10 +220,72 @@ class LivePerformanceTracker:
 
         return report
 
+    def calculate_profit_factor(self, trades_file="user_data/trades.json"):
+        """Calculate profit factor from trades"""
+        if not Path(trades_file).exists():
+            return 0.0
+
+        try:
+            with open(trades_file, 'r') as f:
+                trades = json.load(f)
+        except:
+            return 0.0
+
+        if not trades:
+            return 0.0
+
+        gross_profit = sum(t.get('close_profit_abs', 0) for t in trades if t.get('close_profit_abs', 0) > 0)
+        gross_loss = abs(sum(t.get('close_profit_abs', 0) for t in trades if t.get('close_profit_abs', 0) < 0))
+
+        if gross_loss == 0:
+            return float('inf') if gross_profit > 0 else 0.0
+
+        return gross_profit / gross_loss
+
+    def calculate_sharpe_ratio(self):
+        """Calculate Sharpe ratio from daily snapshots"""
+        snapshots = self.session_data.get('daily_snapshots', [])
+        if len(snapshots) < 2:
+            return 0.0
+
+        daily_returns = []
+        for i in range(1, len(snapshots)):
+            prev_balance = snapshots[i-1]['balance']
+            curr_balance = snapshots[i]['balance']
+            if prev_balance > 0:
+                daily_return = (curr_balance - prev_balance) / prev_balance
+                daily_returns.append(daily_return)
+
+        if not daily_returns or len(daily_returns) < 2:
+            return 0.0
+
+        mean_return = statistics.mean(daily_returns)
+        std_return = statistics.stdev(daily_returns)
+
+        if std_return == 0:
+            return 0.0
+
+        # Annualized Sharpe
+        annual_return = mean_return * 365
+        annual_std = std_return * (365 ** 0.5)
+        sharpe = (annual_return - 0.02) / annual_std  # 2% risk-free rate
+
+        return sharpe
+
     def get_current_status(self):
-        """Get current status as dict"""
+        """Get current status as dict including stage information"""
         now = datetime.now()
         elapsed = now - self.session_data['start_time']
+
+        # Calculate profit factor and Sharpe
+        profit_factor = self.calculate_profit_factor()
+        sharpe_ratio = self.calculate_sharpe_ratio()
+
+        # Get reliability metrics
+        reliability = self.stage_manager.get_reliability_metrics()
+
+        # Get stage information
+        stage_info = self.stage_manager.get_current_stage_info()
 
         return {
             'start_time': self.session_data['start_time'].isoformat(),
@@ -234,7 +301,17 @@ class LivePerformanceTracker:
             'losing_trades': self.session_data['losing_trades'],
             'win_rate': (self.session_data['winning_trades'] / self.session_data['total_trades'] * 100)
                        if self.session_data['total_trades'] > 0 else 0,
-            'max_drawdown_pct': self.session_data['max_drawdown_pct'] * 100
+            'max_drawdown_pct': self.session_data['max_drawdown_pct'] * 100,
+            'profit_factor': profit_factor,
+            'sharpe_ratio': sharpe_ratio,
+            'uptime_pct': reliability['uptime_pct'],
+            'crash_count': reliability['crash_count'],
+            'disconnect_count': reliability['disconnect_count'],
+            'stage_number': stage_info['stage_number'],
+            'stage_name': stage_info['stage_name'],
+            'stage_days_elapsed': stage_info['days_elapsed'],
+            'stage_target_days': stage_info['target_days'],
+            'ready_to_advance': stage_info['ready_to_advance']
         }
 
 

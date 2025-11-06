@@ -54,8 +54,16 @@ def render_dashboard(tracker, trades):
     start_time = datetime.fromisoformat(status['start_time'])
     elapsed = now - start_time
     elapsed_seconds = elapsed.total_seconds()
-    target_seconds = 14 * 24 * 3600  # 14 days
-    progress_pct = min((elapsed_seconds / target_seconds) * 100, 100)
+
+    # Stage-based progress
+    stage_num = status['stage_number']
+    stage_name = status['stage_name']
+    stage_days_elapsed = status['stage_days_elapsed']
+    stage_target_days = status['stage_target_days']
+    ready_to_advance = status['ready_to_advance']
+
+    # Calculate stage progress
+    stage_progress_pct = min((stage_days_elapsed / stage_target_days) * 100, 100)
 
     # Calculate daily stats
     trades_per_day = status['total_trades'] / max(status['days_elapsed'], 1)
@@ -63,27 +71,27 @@ def render_dashboard(tracker, trades):
 
     # Header
     print("="*100)
-    print(" " * 30 + "🤖 LIVE TRADING DASHBOARD - 2 WEEK TEST")
+    print(" " * 30 + "🤖 LIVE TRADING DASHBOARD - STAGED TEST")
     print("="*100)
     print()
 
-    # Test Progress
-    print("⏱️  TEST PROGRESS")
+    # Stage Progress
+    print(f"🎯 CURRENT STAGE: {stage_name}")
     print("-" * 100)
     bar_length = 60
-    filled = int(bar_length * progress_pct / 100)
+    filled = int(bar_length * stage_progress_pct / 100)
     bar = "█" * filled + "░" * (bar_length - filled)
-    print(f"   [{bar}] {progress_pct:.1f}%")
+    stage_status = "✅ READY TO ADVANCE" if ready_to_advance else "⏳ IN PROGRESS"
+    print(f"   [{bar}] {stage_progress_pct:.1f}% - {stage_status}")
+    print(f"   Stage {stage_num}/3:  Day {stage_days_elapsed} of {stage_target_days}")
+    print()
+
+    # Overall Test Progress
+    print("⏱️  OVERALL TEST PROGRESS")
+    print("-" * 100)
     print(f"   Started:     {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"   Current:     {now.strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"   Elapsed:     {format_duration(elapsed_seconds)} (Day {status['days_elapsed']} of 14)")
-    if progress_pct < 100:
-        remaining_seconds = target_seconds - elapsed_seconds
-        print(f"   Remaining:   {format_duration(remaining_seconds)}")
-        eta = now + timedelta(seconds=remaining_seconds)
-        print(f"   ETA:         {eta.strftime('%Y-%m-%d %H:%M:%S')}")
-    else:
-        print(f"   Status:      ✅ TEST COMPLETE!")
+    print(f"   Elapsed:     {format_duration(elapsed_seconds)} (Day {status['days_elapsed']} total)")
     print()
 
     # Performance Metrics
@@ -111,6 +119,8 @@ def render_dashboard(tracker, trades):
     print("⚠️  RISK METRICS")
     print("-" * 100)
     print(f"   Max Drawdown:         {status['max_drawdown_pct']:.2f}%")
+    print(f"   Profit Factor:        {status.get('profit_factor', 0):.2f}")
+    print(f"   Sharpe Ratio:         {status.get('sharpe_ratio', 0):.2f}")
 
     # Status indicator
     if status['max_drawdown_pct'] < 5:
@@ -120,6 +130,14 @@ def render_dashboard(tracker, trades):
     else:
         risk_level = "🔴 HIGH RISK"
     print(f"   Risk Level:           {risk_level}")
+    print()
+
+    # Reliability Metrics
+    print("🛡️  RELIABILITY METRICS")
+    print("-" * 100)
+    print(f"   Uptime:               {status.get('uptime_pct', 100):.1f}%")
+    print(f"   Crashes:              {status.get('crash_count', 0)}")
+    print(f"   Network Disconnects:  {status.get('disconnect_count', 0)}")
     print()
 
     # Recent Trades
@@ -156,24 +174,23 @@ def render_dashboard(tracker, trades):
         print("   No trades yet...")
     print()
 
-    # Success Criteria
-    print("🎯 SUCCESS CRITERIA (2-Week Targets)")
+    # Stage Actions
+    print(f"🎯 STAGE {stage_num} STATUS")
     print("-" * 100)
-    criteria = [
-        ("Win Rate > 40%", status['win_rate'], 40, status['win_rate'] > 40),
-        ("Positive Return", status['total_return_pct'], 0, status['total_return_pct'] > 0),
-        ("Max Drawdown < 20%", status['max_drawdown_pct'], 20, status['max_drawdown_pct'] < 20),
-        ("Min 10 Trades", status['total_trades'], 10, status['total_trades'] >= 10),
-    ]
 
-    passed = 0
-    for criterion, value, target, is_pass in criteria:
-        status_icon = "✅" if is_pass else "⏳" if status['days_elapsed'] < 14 else "❌"
-        passed += 1 if is_pass else 0
-        print(f"   {status_icon} {criterion:<30} (Current: {value:.1f})")
-
+    if ready_to_advance:
+        print("   ✅ ✅ ✅ ALL CRITERIA MET! READY TO ADVANCE! ✅ ✅ ✅")
+        print()
+        print("   Run this command to advance to next stage:")
+        print("      python monitoring/advance_stage.py")
+    else:
+        print("   ⏳ Stage in progress - not all criteria met yet")
+        print()
+        print("   Check detailed criteria:")
+        print("      python monitoring/evaluate_stage.py")
     print()
-    print(f"   Score: {passed}/{len(criteria)} criteria met")
+    print("   View all stage info:")
+    print("      python monitoring/stage_manager.py")
     print()
 
     # Footer
