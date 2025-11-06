@@ -46,7 +46,13 @@ user_data/hyperopt_results/
 user_data/logs/
 user_data/*.sqlite
 user_data/*.db
+user_data/live_test_results/
+user_data/trades.json
+user_data/bot.pid
 freqtrade_source/
+
+# Monitoring runtime data
+monitoring/user_data/
 
 # Jupyter Notebook
 .ipynb_checkpoints
